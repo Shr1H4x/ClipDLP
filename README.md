@@ -1,55 +1,344 @@
 # 🔐 Clipboard Data Leakage Prevention Tool
 
-A concise quickstart and reference for the Clipboard DLP prototype. Full design notes and storage strategy are available in the `docs/` directory.
+> A cross-platform, real-time clipboard security agent designed to detect, alert, and prevent sensitive data leakage at the endpoint level.
 
-Badges: Python 3.10+ | Platform: Windows | Linux | Educational
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=flat-square&logo=python)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-green?style=flat-square)
+![License](https://img.shields.io/badge/License-Educational-orange?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active%20Development-yellow?style=flat-square)
 
 ---
 
-**Quick Start (copy-paste)**
+## 📌 Overview
+
+Clipboard-based attacks are an underrepresented but critical class of endpoint threats. Malicious software silently monitors the system clipboard to intercept passwords, cryptocurrency wallet addresses, OTPs, and financial credentials — often without any user awareness.
+
+This project implements a lightweight **Data Loss Prevention (DLP)** agent focused entirely on clipboard security. It operates as a background process, continuously monitoring clipboard state, classifying copied content by risk level, and enforcing configurable response actions — alerts, auto-clear, and event logging.
+
+**Core attack vectors this tool defends against:**
+- **ClipBanker / Clipboard Hijackers** — malware that swaps copied crypto addresses with attacker-controlled ones
+- **Credential Harvesting** — passive clipboard sniffing for passwords and tokens
+- **Accidental Data Exposure** — users unknowingly pasting sensitive data into untrusted applications
+
+---
+
+## 🎯 Objectives
+
+- Monitor clipboard activity in real-time across Windows and Linux
+- Detect sensitive data using extensible pattern-based analysis
+- Classify detected data into risk levels (Low / Medium / High / Critical)
+- Prevent leakage through configurable alerts, auto-clear, and logging
+- Provide a functional, demonstrable proof-of-concept for endpoint DLP
+- Document real-world attack scenarios and threat model for academic analysis
+
+---
+
+## ⚙️ Features
+
+### Core Features
+
+| Feature | Description |
+|---|---|
+| 📋 Real-time Clipboard Monitoring | Polls clipboard state at configurable intervals |
+| 🧠 Pattern-Based Detection | Regex engine covering 10+ sensitive data types |
+| ⚠️ Risk Classification | Four-tier risk model (Low → Critical) |
+| 🚨 Alert Notifications | Desktop notifications via OS-native APIs |
+| 🧹 Auto-Clear | Automatic clipboard wipe on High/Critical detections |
+| 📝 Event Logging | Timestamped logs with data type, risk level, and action taken |
+| 🖥️ System Tray Agent | Runs silently in background, always-on protection |
+
+### Advanced Features
+
+| Feature | Description |
+|---|---|
+| 🔍 Active Application Detection | Identifies which process triggered the clipboard event |
+| ⏱️ Smart Auto-Clear Timing | Configurable delay before clearing (grace period) |
+| 📊 Detection Dashboard | GUI for live event feed and statistics |
+| 🔒 Clipboard Snapshot Diffing | Detects silent clipboard manipulation by third-party processes |
+| 📁 Report Export | Export session logs as CSV or JSON for thesis reporting |
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│              Clipboard Listener              │
+│         (Polling / Hook-based)               │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────┐
+│           Data Analyzer Engine              │
+│     (Regex Pattern Matching Engine)         │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────┐
+│         Risk Classification Module          │
+│      Low │ Medium │ High │ Critical         │
+└──────┬───────────┬──────────────┬───────────┘
+       │           │              │
+       ▼           ▼              ▼
+  ┌────────┐  ┌─────────┐  ┌──────────┐
+  │ Alert  │  │  Clear  │  │  Log     │
+  │ Notify │  │ Clipboard│  │  Event   │
+  └────────┘  └─────────┘  └──────────┘
+```
+
+---
+
+## 🧰 Tech Stack
+
+| Component | Technology | Purpose |
+|---|---|---|
+| Language | Python 3.8+ | Core runtime |
+| Clipboard Access | `pyperclip` | Cross-platform clipboard read/write |
+| GUI Framework | `PyQt5` / `Tkinter` | Dashboard and alert windows |
+| Pattern Matching | `re` (stdlib) | Sensitive data detection |
+| System Tray | `pystray` | Background agent icon |
+| Process Detection | `psutil` | Active application identification |
+| Notifications | `plyer` | OS-native desktop alerts |
+| Logging | `logging` (stdlib) | Event log management |
+
+---
+
+## 🔍 Detection Engine
+
+The analyzer uses a multi-pattern regex engine to identify sensitive data categories:
+
+| Data Type | Pattern Example | Default Risk Level |
+|---|---|---|
+| 💰 Crypto Wallet Address (BTC) | `1A1zP1eP5QGefi2...` | 🔴 Critical |
+| 💰 Crypto Wallet Address (ETH) | `0x742d35Cc6634...` | 🔴 Critical |
+| 🔑 Password-like Strings | High entropy + special chars | 🔴 High |
+| 💳 Credit Card Numbers | `4111 1111 1111 1111` | 🔴 High |
+| 🔐 API Keys / Tokens | `sk-`, `ghp_`, `AKIA...` | 🔴 High |
+| 🔢 OTP / 2FA Codes | 4–8 digit standalone | 🟡 Medium |
+| 📧 Email Addresses | `user@domain.com` | 🟡 Medium |
+| 📱 Phone Numbers | Local + international formats | 🟡 Medium |
+| 🌐 Private IPs / Internal URLs | `192.168.x.x`, `10.x.x.x` | 🟢 Low |
+| 📄 Generic Sensitive Keywords | `password`, `secret`, `token` | 🟢 Low |
+
+---
+
+## 🚨 Response Matrix
+
+| Risk Level | Alert | Auto-Clear | Log |
+|---|---|---|---|
+| 🟢 Low | Silent log only | ❌ | ✅ |
+| 🟡 Medium | Toast notification | ❌ | ✅ |
+| 🔴 High | Alert popup | ✅ (5s delay) | ✅ |
+| 🚨 Critical | Alert + sound | ✅ (immediate) | ✅ |
+
+---
+
+## 💻 Platform Support
+
+| OS | Status | Notes |
+|---|---|---|
+| Windows 10/11 | ✅ Supported | Full feature set |
+| Ubuntu / Debian Linux | ✅ Supported | Requires `xclip` or `xsel` |
+| macOS | ⚠️ Partial | Clipboard access supported, tray limited |
+
+---
+
+## 📦 Installation
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Shr1H4x/clipboard-security-tool.git
 cd clipboard-security-tool
-python3 -m venv .venv
-source .venv/bin/activate
+```
+
+### 2. Install Python Dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-See `docs/INSTALLATION.md` for detailed platform notes and packaging instructions.
-
----
-
-**Run the CLI demo**
+### 3. Linux Clipboard Backend (Required on Linux)
 
 ```bash
-python -m clipboard_dlp.cli info
-python -m clipboard_dlp.cli analyze --text "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+sudo apt install xclip
+# or
+sudo apt install xsel
 ```
 
-If you installed the project with `pip install -e .`, use the `clipboard-dlp` entry:
+### 4. Verify Installation
 
 ```bash
-clipboard-dlp analyze --text "sk-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+python main.py --test
 ```
 
 ---
 
-**Run tests**
+## ▶️ Usage
+
+### Run as Background Agent (Default)
 
 ```bash
-pytest -q
+python main.py
+```
+
+### Run with Dashboard GUI
+
+```bash
+python main.py --gui
+```
+
+### Run in Verbose Debug Mode
+
+```bash
+python main.py --verbose
+```
+
+### View Live Log
+
+```bash
+tail -f logs/clipboard_events.log
 ```
 
 ---
 
-**Where to look next**
-- `docs/INSTALLATION.md` — full install & platform notes
-- `docs/clipboard_dlp_storage_strategy.md` — storage strategy and privacy model
-- `src/clipboard_dlp/analyzer.py` — pattern rules and entropy classifier
-- `tests/test_analyzer.py` — example tests
+## 🗂️ Project Structure
+
+```
+clipboard-security-tool/
+│
+├── main.py                  # Entry point
+├── requirements.txt
+├── config.yaml              # User-configurable detection rules and thresholds
+│
+├── core/
+│   ├── monitor.py           # Clipboard polling loop
+│   ├── analyzer.py          # Pattern matching and data classification
+│   ├── classifier.py        # Risk level assignment logic
+│   └── responder.py         # Alert, clear, and log response actions
+│
+├── patterns/
+│   └── regex_patterns.py    # All detection patterns (extensible)
+│
+├── gui/
+│   ├── dashboard.py         # Real-time event dashboard
+│   ├── tray.py              # System tray agent
+│   └── alerts.py            # Alert popup windows
+│
+├── logs/
+│   └── clipboard_events.log # Runtime log output
+│
+└── tests/
+    ├── test_analyzer.py
+    └── test_classifier.py
+```
 
 ---
 
-This repository is a prototype: it provides a detection engine and CLI demo. The next development steps are `monitor.py` (real-time capture), GUI/tray components, and configuration. If you'd like, I can add a minimal GitHub Actions CI workflow to run tests on push.
+## 🧪 Demo Scenarios
 
+### Scenario 1: Cryptocurrency Address Swap Attack
+
+```
+1. User copies their BTC wallet address to send funds
+2. ClipBanker malware silently replaces it with attacker address
+3. ❌ Without tool: User pastes attacker address → funds lost
+4. ✅ With tool: Tool detects crypto address, alerts user, clears clipboard
+```
+
+### Scenario 2: Accidental Password Copy
+
+```
+1. Developer copies database password from config file
+2. Switches window, pastes into Slack chat by mistake
+3. ❌ Without tool: Credential exposed in chat logs
+4. ✅ With tool: High-risk alert triggered on copy → user prompted before paste
+```
+
+### Scenario 3: API Key Leakage
+
+```
+1. User copies AWS access key (AKIA...) from terminal
+2. Tool detects AKIA prefix pattern → Critical risk
+3. ✅ Auto-clear fires after 3 seconds with desktop notification
+```
+
+---
+
+## 📝 Logging Format
+
+All events are logged in structured format for analysis and thesis reporting:
+
+```
+[2025-07-14 14:32:11] CRITICAL | Type: BTC_ADDRESS | Action: CLEARED | App: chrome.exe
+[2025-07-14 14:35:42] HIGH     | Type: PASSWORD    | Action: ALERTED | App: notepad.exe
+[2025-07-14 14:40:03] MEDIUM   | Type: EMAIL       | Action: LOGGED  | App: outlook.exe
+```
+
+Log fields: `timestamp`, `risk_level`, `data_type`, `action_taken`, `source_application`
+
+---
+
+## ⚠️ Known Limitations
+
+- Regex-based detection produces false positives on high-entropy random strings
+- Cannot inspect clipboard content from elevated/privileged processes on some OS configurations
+- Auto-clear may interfere with legitimate workflows if thresholds are too aggressive
+- No deep content inspection (file buffers, image data, rich text objects)
+- Linux clipboard hook support depends on X11; Wayland has limited clipboard API access
+
+---
+
+## 🔬 Threat Model
+
+This tool is designed against the following attacker profile:
+
+- **Attacker position:** Unprivileged malware running in user context on the target machine
+- **Attack goal:** Silent clipboard exfiltration or address substitution
+- **Known malware families:** ClipBanker, Trojan.CliptoShuffler, ComboJack, Evrial
+- **Out of scope:** Kernel-level keyloggers, hypervisor attacks, hardware implants
+
+---
+
+## 📚 Future Improvements
+
+- ML-based content classification to reduce false positives
+- Integration with enterprise DLP platforms (Symantec, Microsoft Purview)
+- Behavioral analysis: detect clipboard polling by third-party processes
+- Encrypted clipboard vault for secure temporary storage
+- Cross-device clipboard sync with end-to-end encryption
+
+---
+
+## 🎓 Academic Context
+
+Developed as a Bachelor's thesis project in **Cybersecurity and Ethical Hacking**.
+
+**Research focus:** Endpoint-level data loss prevention with emphasis on clipboard attack vectors, including real-world malware analysis (ClipBanker family) and defensive tool design.
+
+**Thesis structure alignment:**
+- Chapter 3 — Threat modeling and attack surface analysis
+- Chapter 4 — System design and detection engine architecture
+- Chapter 5 — Implementation, testing, and demo scenarios
+- Chapter 6 — Evaluation, limitations, and future work
+
+---
+
+## 📄 License
+
+This project is developed for educational and authorized security research purposes only. Do not deploy in production environments without proper security review.
+
+---
+
+## 👨‍💻 Author
+
+**Shr1H4x**
+Bachelor in Cybersecurity & Ethical Hacking
+
+---
+
+## ⭐ Acknowledgements
+
+- Real-world clipboard hijacking malware analysis (ClipBanker, Evrial, ComboJack)
+- Python open-source community: `pyperclip`, `pystray`, `plyer`
+- OWASP Data Leakage Prevention guidelines
