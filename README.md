@@ -342,3 +342,5 @@ Bachelor in Cybersecurity & Ethical Hacking
 - Real-world clipboard hijacking malware analysis (ClipBanker, Evrial, ComboJack)
 - Python open-source community: `pyperclip`, `pystray`, `plyer`
 - OWASP Data Leakage Prevention guidelines
+
+## Underdeveloment Phase 
